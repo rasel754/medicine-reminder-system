@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="30.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label text="Pharmacy Admin Summary" style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #10b981;" />
+      
+      <!-- Cards Layout -->
+      <GridPane hgap="20.0" vgap="20.0">
+         <columnConstraints>
+            <javafx.scene.layout.ColumnConstraints percentWidth="33.3" />
+            <javafx.scene.layout.ColumnConstraints percentWidth="33.3" />
+            <javafx.scene.layout.ColumnConstraints percentWidth="33.3" />
+         </columnConstraints>
+         <children>
+            <!-- Total Stock Items Card -->
+            <VBox spacing="10.0" styleClass="card" GridPane.columnIndex="0">
+               <children>
+                  <Label text="Total Stock Products" styleClass="card-title" />
+                  <Label fx:id="lblTotalStock" text="0" styleClass="card-value" />
+               </children>
+            </VBox>
+            
+            <!-- Low Stock Card -->
+            <VBox spacing="10.0" styleClass="card" GridPane.columnIndex="1">
+               <children>
+                  <Label text="Low Stock warning" styleClass="card-title" style="-fx-text-fill: #f59e0b;" />
+                  <Label fx:id="lblLowStock" text="0" styleClass="card-value" style="-fx-text-fill: #f59e0b;" />
+               </children>
+            </VBox>
+            
+            <!-- Expired Items Card -->
+            <VBox spacing="10.0" styleClass="card" GridPane.columnIndex="2">
+               <children>
+                  <Label text="Expired Medicines" styleClass="card-title" style="-fx-text-fill: #ef4444;" />
+                  <Label fx:id="lblExpiredMeds" text="0" styleClass="card-value" style="-fx-text-fill: #ef4444;" />
+               </children>
+            </VBox>
+         </children>
+      </GridPane>
+   </children>
+</VBox>

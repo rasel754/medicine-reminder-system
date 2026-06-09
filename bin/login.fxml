@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
+
+<StackPane stylesheets="@styles.css" prefWidth="800" prefHeight="600" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.LoginController">
+   <children>
+      <VBox alignment="CENTER" spacing="15.0" styleClass="card" maxWidth="380.0" maxHeight="450.0">
+         <padding>
+            <Insets bottom="40.0" left="30.0" right="30.0" top="40.0" />
+         </padding>
+         <children>
+            <Label text="💊 PillSync" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #6366f1;" />
+            <Label text="Sign in to your account" styleClass="text-secondary" style="-fx-font-size: 14px;" />
+            
+            <VBox alignment="CENTER_LEFT" spacing="5.0">
+               <children>
+                  <Label text="Username" styleClass="text-secondary" style="-fx-font-weight: bold; -fx-font-size: 12px;" />
+                  <TextField fx:id="usernameField" promptText="Enter your username" maxWidth="Infinity" />
+               </children>
+               <VBox.margin>
+                  <Insets top="15.0" />
+               </VBox.margin>
+            </VBox>
+            
+            <VBox alignment="CENTER_LEFT" spacing="5.0">
+               <children>
+                  <Label text="Password" styleClass="text-secondary" style="-fx-font-weight: bold; -fx-font-size: 12px;" />
+                  <PasswordField fx:id="passwordField" promptText="Enter your password" maxWidth="Infinity" />
+               </children>
+            </VBox>
+            
+            <Label fx:id="errorLabel" wrapText="true" style="-fx-text-fill: #ef4444; -fx-font-size: 12px; -fx-font-weight: bold;" />
+            
+            <Button fx:id="loginButton" text="Sign In" onAction="#handleLogin" maxWidth="Infinity" style="-fx-font-size: 14px;" />
+            
+            <Hyperlink text="Don't have an account? Register here" onAction="#handleShowRegister" style="-fx-text-fill: #6366f1; -fx-underline: true; -fx-font-size: 13px;" />
+         </children>
+      </VBox>
+   </children>
+</StackPane>

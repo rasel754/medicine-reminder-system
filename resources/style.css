@@ -1,0 +1,15 @@
+:root {
+    --background: #0f172a;      /* Deep slate background */
+    --surface: #1e293b;         /* Dark surface panels */
+    --surface-hover: #334155;   /* Surface hover background */
+    --primary: #6366f1;         /* Indigo accent */
+    --primary-hover: #4f46e5;   /* Indigo hover */
+    --text-primary: #f8fafc;    /* Off-white primary text */
+    --text-secondary: #94a3b8;  /* Muted grey-blue text */
+    --success: #10b981;         /* Emerald green for Taken */
+    --warning: #f59e0b;         /* Amber yellow for Skipped */
+    --danger: #ef4444;          /* Crimson red for Low Stock / Missed */
+    --border: #334155;          /* Card borders */
+    --card-bg: #1e293b;         /* Individual card bg */
+    --font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="20.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.AdminUsageController">
+   <children>
+      <Label text="Patient Adherence Logs" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+      <Label text="Review dose compliance histories (Taken/Skipped) for all active patient prescriptions." styleClass="text-secondary" style="-fx-font-size: 13px;" />
+      
+      <TableView fx:id="usageTable" VBox.vgrow="ALWAYS" prefHeight="480.0">
+         <columns>
+            <TableColumn fx:id="colMedName" text="Medicine Name" prefWidth="220.0" />
+            <TableColumn fx:id="colUser" text="Patient (Username)" prefWidth="180.0" />
+            <TableColumn fx:id="colLogDate" text="Date &amp; Time" prefWidth="220.0" />
+            <TableColumn fx:id="colStatus" text="Adherence Status" prefWidth="180.0" />
+         </columns>
+      </TableView>
+   </children>
+</VBox>

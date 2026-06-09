@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="25.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.MedicineController">
+   <children>
+      <Label text="Configure Medication" style="-fx-font-size: 26px; -fx-font-weight: bold;" />
+      
+      <VBox spacing="15.0" styleClass="card" maxWidth="500.0">
+         <children>
+            <!-- Name -->
+            <VBox spacing="5.0">
+               <children>
+                  <Label text="Medicine Name" styleClass="text-secondary" style="-fx-font-weight: bold;" />
+                  <TextField fx:id="nameField" promptText="e.g., Aspirin 81mg" />
+               </children>
+            </VBox>
+            
+            <!-- Dosage -->
+            <VBox spacing="5.0">
+               <children>
+                  <Label text="Dosage" styleClass="text-secondary" style="-fx-font-weight: bold;" />
+                  <TextField fx:id="dosageField" promptText="e.g., 1 pill / 5ml" />
+               </children>
+            </VBox>
+            
+            <!-- Scheduled Time -->
+            <VBox spacing="5.0">
+               <children>
+                  <Label text="Scheduled Time (HH:MM)" styleClass="text-secondary" style="-fx-font-weight: bold;" />
+                  <TextField fx:id="timeField" promptText="e.g., 08:00" />
+               </children>
+            </VBox>
+            
+            <!-- Expiry Date -->
+            <VBox spacing="5.0">
+               <children>
+                  <Label text="Expiry Date" styleClass="text-secondary" style="-fx-font-weight: bold;" />
+                  <DatePicker fx:id="expiryDatePicker" maxWidth="Infinity" promptText="Select expiry date" />
+               </children>
+            </VBox>
+
+            <Label fx:id="formFeedbackLabel" wrapText="true" style="-fx-text-fill: #10b981; -fx-font-size: 12px; -fx-font-weight: bold;" />
+
+            <!-- Save Button -->
+            <Button text="Save Medication" onAction="#handleSaveMedicine" maxWidth="Infinity" style="-fx-font-size: 14px;" />
+         </children>
+      </VBox>
+   </children>
+</VBox>

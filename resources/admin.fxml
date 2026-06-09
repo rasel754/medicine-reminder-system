@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
+
+<BorderPane stylesheets="@styles.css" prefWidth="1024" prefHeight="720" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.AdminController">
+   <!-- Left Sidebar -->
+   <left>
+      <VBox spacing="10.0" styleClass="sidebar" prefWidth="240.0" alignment="TOP_LEFT">
+         <padding>
+            <Insets top="30.0" bottom="20.0" left="15.0" right="15.0" />
+         </padding>
+         <children>
+            <Label text="💊 PillSync Admin" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #10b981;" />
+            <Label fx:id="welcomeLabel" text="Welcome, Admin" styleClass="text-secondary" style="-fx-font-size: 13px;">
+               <VBox.margin>
+                  <Insets bottom="20.0" />
+               </VBox.margin>
+            </Label>
+            
+            <Button fx:id="btnDashboard" text="📊  Dashboard" onAction="#showDashboardPane" styleClass="nav-button" maxWidth="Infinity" />
+            <Button fx:id="btnStock" text="📦  Stock Management" onAction="#showStockPane" styleClass="nav-button" maxWidth="Infinity" />
+            <Button fx:id="btnExpiry" text="⚠️  Expiry Tracking" onAction="#showExpiryPane" styleClass="nav-button" maxWidth="Infinity" />
+            <Button fx:id="btnUsage" text="📋  Usage Monitoring" onAction="#showUsagePane" styleClass="nav-button" maxWidth="Infinity" />
+            
+            <VBox VBox.vgrow="ALWAYS" /> <!-- spacer -->
+            
+            <Button fx:id="btnLogout" text="🚪  Log Out" onAction="#handleLogout" styleClass="nav-button" maxWidth="Infinity" style="-fx-text-fill: #ef4444;" />
+         </children>
+      </VBox>
+   </left>
+   
+   <!-- Center Content Panel Area -->
+   <center>
+      <StackPane fx:id="contentArea" style="-fx-background-color: #0f172a;">
+         <padding>
+            <Insets top="30.0" bottom="30.0" left="30.0" right="30.0" />
+         </padding>
+      </StackPane>
+   </center>
+</BorderPane>
