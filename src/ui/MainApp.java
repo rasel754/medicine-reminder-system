@@ -1,10 +1,13 @@
 package ui;
 
 import dao.UsageLogDAO;
+import dao.IntakeLogDAO;
 import model.Medicine;
 import model.UsageLog;
+import model.User;
 import service.ReminderService;
 import service.StockService;
+import service.AuthService;
 import util.DBConnection;
 
 import javafx.application.Application;
@@ -49,12 +52,21 @@ public class MainApp extends Application {
             primaryStage.setMinHeight(600);
             primaryStage.show();
 
-            // Setup and start background reminders
+            // Setup background reminders
             reminderService = new ReminderService();
             reminderService.addNotificationListener((medicine, dueTime) -> {
-                Platform.runLater(() -> showReminderPopup(medicine, dueTime));
+                Platform.runLater(() -> {
+                    // Show standard JavaFX Alert
+                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+                    alert.setTitle("Medicine Reminder");
+                    alert.setHeaderText("Time to take your medicine!");
+                    alert.setContentText("Time to take your medicine: " + medicine.getName() + " (" + medicine.getDosage() + ") due at " + dueTime);
+                    alert.show();
+
+                    // Also show the interactive custom popup
+                    showReminderPopup(medicine, dueTime);
+                });
             });
-            reminderService.startChecker();
 
         } catch (IOException e) {
             System.err.println("Critical Error: Failed to start PillSync application UI: " + e.getMessage());
@@ -85,8 +97,17 @@ public class MainApp extends Application {
         buttons.setAlignment(Pos.CENTER);
 
         Button btnTaken = new Button("Mark as Taken");
-        btnTaken.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
+        btnTaken.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
         btnTaken.setOnAction(e -> {
+            User user = AuthService.getCurrentUser();
+            if (user != null) {
+                IntakeLogDAO intakeLogDAO = new IntakeLogDAO();
+                String today = java.time.LocalDate.now().toString();
+                if (!intakeLogDAO.checkExists(user.getId(), medicine.getId(), today)) {
+                    intakeLogDAO.insertLog(user.getId(), medicine.getId(), "taken");
+                }
+            }
+
             // Log taken status in database
             UsageLogDAO logDAO = new UsageLogDAO();
             UsageLog log = new UsageLog(0, medicine.getId(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), "TAKEN");
@@ -99,8 +120,28 @@ public class MainApp extends Application {
             popupStage.close();
         });
 
+        Button btnMissed = new Button("Mark as Missed");
+        btnMissed.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
+        btnMissed.setOnAction(e -> {
+            User user = AuthService.getCurrentUser();
+            if (user != null) {
+                IntakeLogDAO intakeLogDAO = new IntakeLogDAO();
+                String today = java.time.LocalDate.now().toString();
+                if (!intakeLogDAO.checkExists(user.getId(), medicine.getId(), today)) {
+                    intakeLogDAO.insertLog(user.getId(), medicine.getId(), "missed");
+                }
+            }
+
+            // Log missed status in database
+            UsageLogDAO logDAO = new UsageLogDAO();
+            UsageLog log = new UsageLog(0, medicine.getId(), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), "MISSED");
+            logDAO.addLog(log);
+            
+            popupStage.close();
+        });
+
         Button btnSnooze = new Button("Snooze");
-        btnSnooze.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-radius: 6;");
+        btnSnooze.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
         btnSnooze.setOnAction(e -> {
             // Pause for 5 minutes and re-trigger
             PauseTransition pause = new PauseTransition(Duration.minutes(5));
@@ -109,14 +150,18 @@ public class MainApp extends Application {
             popupStage.close();
         });
 
-        buttons.getChildren().addAll(btnTaken, btnSnooze);
+        buttons.getChildren().addAll(btnTaken, btnMissed, btnSnooze);
         root.getChildren().addAll(title, medName, medDetails, buttons);
 
-        Scene scene = new Scene(root, 360, 200);
+        Scene scene = new Scene(root, 400, 220);
         popupStage.setScene(scene);
         popupStage.setAlwaysOnTop(true);
         popupStage.centerOnScreen();
         popupStage.show();
+    }
+
+    public static ReminderService getReminderService() {
+        return reminderService;
     }
 
     @Override

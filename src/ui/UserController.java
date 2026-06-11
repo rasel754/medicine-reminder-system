@@ -69,6 +69,11 @@ public class UserController {
 
         welcomeLabel.setText("Welcome, " + user.getUsername() + " (" + user.getRole() + ")");
         
+        // Start background reminders for user
+        if (MainApp.getReminderService() != null) {
+            MainApp.getReminderService().startChecker();
+        }
+        
         // Show dashboard overview pane on load
         showDashboardPane(null);
     }
@@ -209,6 +214,11 @@ public class UserController {
     public void handleLogout(ActionEvent event) {
         AuthService authService = new AuthService();
         authService.logout();
+
+        // Stop background reminders when logging out
+        if (MainApp.getReminderService() != null) {
+            MainApp.getReminderService().stopChecker();
+        }
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/login.fxml"));
