@@ -32,3 +32,13 @@ CREATE TABLE IF NOT EXISTS usage_logs (
     status TEXT NOT NULL,          -- TAKEN, SKIPPED, MISSED
     FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS intake_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    medicine_id INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    date TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE CASCADE
+);

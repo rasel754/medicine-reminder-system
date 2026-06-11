@@ -108,6 +108,16 @@ public class DBConnection {
                          "FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE CASCADE" +
                          ")");
 
+            stmt.execute("CREATE TABLE IF NOT EXISTS intake_logs (" +
+                         "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                         "user_id INTEGER NOT NULL," +
+                         "medicine_id INTEGER NOT NULL," +
+                         "status TEXT NOT NULL," +
+                         "date TEXT NOT NULL," +
+                         "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE," +
+                         "FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE CASCADE" +
+                         ")");
+
             // Seed database with default users if new
             try (Statement checkStmt = conn.createStatement();
                  java.sql.ResultSet rs = checkStmt.executeQuery("SELECT COUNT(*) FROM users")) {
@@ -152,6 +162,16 @@ public class DBConnection {
                          "medicine_id INT NOT NULL," +
                          "taken_date VARCHAR(20) NOT NULL," +
                          "status VARCHAR(20) NOT NULL," +
+                         "FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE CASCADE" +
+                         ")");
+
+            stmt.execute("CREATE TABLE IF NOT EXISTS intake_logs (" +
+                         "id INT AUTO_INCREMENT PRIMARY KEY," +
+                         "user_id INT NOT NULL," +
+                         "medicine_id INT NOT NULL," +
+                         "status VARCHAR(20) NOT NULL," +
+                         "date DATE NOT NULL," +
+                         "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE," +
                          "FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE CASCADE" +
                          ")");
 

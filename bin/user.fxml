@@ -26,6 +26,7 @@
             <Button fx:id="btnAddMedicine" text="➕  Add Medicine" onAction="#showAddMedicinePane" styleClass="nav-button" maxWidth="Infinity" />
             <Button fx:id="btnMedicineList" text="💊  Medicine List" onAction="#showMedicineListPane" styleClass="nav-button" maxWidth="Infinity" />
             <Button fx:id="btnCalendar" text="🗓️  Calendar View" onAction="#showCalendarPane" styleClass="nav-button" maxWidth="Infinity" />
+            <Button fx:id="btnIntakeHistory" text="📊  Intake History" onAction="#showIntakeHistoryPane" styleClass="nav-button" maxWidth="Infinity" />
             
             <VBox VBox.vgrow="ALWAYS" /> <!-- spacer -->
             
