@@ -9,6 +9,7 @@ import service.ReminderService;
 import service.StockService;
 import service.AuthService;
 import util.DBConnection;
+import util.SoundUtil;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -99,6 +100,7 @@ public class MainApp extends Application {
         Button btnTaken = new Button("Mark as Taken");
         btnTaken.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
         btnTaken.setOnAction(e -> {
+            SoundUtil.stopAlert();
             User user = AuthService.getCurrentUser();
             if (user != null) {
                 IntakeLogDAO intakeLogDAO = new IntakeLogDAO();
@@ -123,6 +125,7 @@ public class MainApp extends Application {
         Button btnMissed = new Button("Mark as Missed");
         btnMissed.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
         btnMissed.setOnAction(e -> {
+            SoundUtil.stopAlert();
             User user = AuthService.getCurrentUser();
             if (user != null) {
                 IntakeLogDAO intakeLogDAO = new IntakeLogDAO();
@@ -143,6 +146,7 @@ public class MainApp extends Application {
         Button btnSnooze = new Button("Snooze");
         btnSnooze.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
         btnSnooze.setOnAction(e -> {
+            SoundUtil.stopAlert();
             // Pause for 5 minutes and re-trigger
             PauseTransition pause = new PauseTransition(Duration.minutes(5));
             pause.setOnFinished(evt -> Platform.runLater(() -> showReminderPopup(medicine, dueTime + " (Snoozed)")));

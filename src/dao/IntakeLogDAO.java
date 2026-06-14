@@ -123,4 +123,200 @@ public class IntakeLogDAO {
         }
         return list;
     }
+
+    /**
+     * Retrieves the most used medicines along with their intake count, filtered by date range.
+     * Only counts status 'taken'.
+     */
+    public List<model.UsageDTO> getMostUsedMedicines(String filter) {
+        List<model.UsageDTO> list = new ArrayList<>();
+        Connection conn = DBConnection.getConnection();
+        if (conn == null) return list;
+
+        String filterSql = "";
+        if ("Today".equalsIgnoreCase(filter)) {
+            filterSql = " AND il.date = ? ";
+        } else if ("Last 7 days".equalsIgnoreCase(filter)) {
+            filterSql = " AND il.date >= ? ";
+        }
+
+        String query = "SELECT m.name, COUNT(*) as total " +
+                       "FROM intake_logs il " +
+                       "JOIN medicines m ON il.medicine_id = m.id " +
+                       "WHERE il.status = 'taken' " + filterSql +
+                       "GROUP BY m.name " +
+                       "ORDER BY total DESC";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            if ("Today".equalsIgnoreCase(filter)) {
+                pstmt.setString(1, LocalDate.now().toString());
+            } else if ("Last 7 days".equalsIgnoreCase(filter)) {
+                pstmt.setString(1, LocalDate.now().minusDays(7).toString());
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new model.UsageDTO(rs.getString("name"), rs.getInt("total")));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL Exception in IntakeLogDAO.getMostUsedMedicines: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * Retrieves daily taken doses counts grouped by date.
+     */
+    public List<model.UsageDTO> getDailyUsage(String filter) {
+        List<model.UsageDTO> list = new ArrayList<>();
+        Connection conn = DBConnection.getConnection();
+        if (conn == null) return list;
+
+        String filterSql = "";
+        if ("Today".equalsIgnoreCase(filter)) {
+            filterSql = " AND date = ? ";
+        } else if ("Last 7 days".equalsIgnoreCase(filter)) {
+            filterSql = " AND date >= ? ";
+        }
+
+        String query = "SELECT date as day, COUNT(*) as total " +
+                       "FROM intake_logs " +
+                       "WHERE status = 'taken' " + filterSql +
+                       "GROUP BY date " +
+                       "ORDER BY date ASC";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            if ("Today".equalsIgnoreCase(filter)) {
+                pstmt.setString(1, LocalDate.now().toString());
+            } else if ("Last 7 days".equalsIgnoreCase(filter)) {
+                pstmt.setString(1, LocalDate.now().minusDays(7).toString());
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new model.UsageDTO(rs.getString("day"), rs.getInt("total")));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL Exception in IntakeLogDAO.getDailyUsage: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * Retrieves weekly taken doses counts grouped by week.
+     * Supports both SQLite and MySQL formats.
+     */
+    public List<model.UsageDTO> getWeeklyUsage(String filter) {
+        List<model.UsageDTO> list = new ArrayList<>();
+        Connection conn = DBConnection.getConnection();
+        if (conn == null) return list;
+
+        try {
+            boolean isSQLite = conn.getMetaData().getDatabaseProductName().toLowerCase().contains("sqlite");
+            String filterSql = "";
+            if ("Today".equalsIgnoreCase(filter)) {
+                filterSql = " AND date = ? ";
+            } else if ("Last 7 days".equalsIgnoreCase(filter)) {
+                filterSql = " AND date >= ? ";
+            }
+
+            String weekExpr = isSQLite ? "strftime('%Y-W%W', date)" : "CONCAT(YEAR(date), '-W', WEEK(date))";
+            String query = "SELECT " + weekExpr + " as week, COUNT(*) as total " +
+                           "FROM intake_logs " +
+                           "WHERE status = 'taken' " + filterSql +
+                           "GROUP BY week " +
+                           "ORDER BY week ASC";
+
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                if ("Today".equalsIgnoreCase(filter)) {
+                    pstmt.setString(1, LocalDate.now().toString());
+                } else if ("Last 7 days".equalsIgnoreCase(filter)) {
+                    pstmt.setString(1, LocalDate.now().minusDays(7).toString());
+                }
+
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    while (rs.next()) {
+                        list.add(new model.UsageDTO(rs.getString("week"), rs.getInt("total")));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL Exception in IntakeLogDAO.getWeeklyUsage: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * Count total taken doses in a given date filter range.
+     */
+    public int getTakenCount(String filter) {
+        Connection conn = DBConnection.getConnection();
+        if (conn == null) return 0;
+
+        String filterSql = "";
+        if ("Today".equalsIgnoreCase(filter)) {
+            filterSql = " AND date = ? ";
+        } else if ("Last 7 days".equalsIgnoreCase(filter)) {
+            filterSql = " AND date >= ? ";
+        }
+
+        String query = "SELECT COUNT(*) FROM intake_logs WHERE status = 'taken'" + filterSql;
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            if ("Today".equalsIgnoreCase(filter)) {
+                pstmt.setString(1, LocalDate.now().toString());
+            } else if ("Last 7 days".equalsIgnoreCase(filter)) {
+                pstmt.setString(1, LocalDate.now().minusDays(7).toString());
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL Exception in IntakeLogDAO.getTakenCount: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
+     * Count total logged doses (taken + missed) in a given date filter range.
+     */
+    public int getTotalCount(String filter) {
+        Connection conn = DBConnection.getConnection();
+        if (conn == null) return 0;
+
+        String filterSql = "";
+        if ("Today".equalsIgnoreCase(filter)) {
+            filterSql = " AND date = ? ";
+        } else if ("Last 7 days".equalsIgnoreCase(filter)) {
+            filterSql = " AND date >= ? ";
+        }
+
+        String query = "SELECT COUNT(*) FROM intake_logs WHERE 1=1" + filterSql;
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            if ("Today".equalsIgnoreCase(filter)) {
+                pstmt.setString(1, LocalDate.now().toString());
+            } else if ("Last 7 days".equalsIgnoreCase(filter)) {
+                pstmt.setString(1, LocalDate.now().minusDays(7).toString());
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL Exception in IntakeLogDAO.getTotalCount: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }
+

@@ -1,45 +1,63 @@
 package ui;
 
-import dao.MedicineDAO;
-import dao.UsageLogDAO;
-import dao.UserDAO;
-import model.Medicine;
-import model.UsageLog;
-import service.AuthService;
+import model.UsageDTO;
 import model.User;
+import service.AuthService;
+import service.UsageService;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.paint.Color;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AdminUsageController {
 
     @FXML
-    private TableView<UsageRow> usageTable;
+    private ComboBox<String> filterComboBox;
 
     @FXML
-    private TableColumn<UsageRow, String> colMedName;
+    private Label lblTotalDoses;
 
     @FXML
-    private TableColumn<UsageRow, String> colUser;
+    private Label lblAdherenceRate;
 
     @FXML
-    private TableColumn<UsageRow, String> colLogDate;
+    private Label lblTopMedicine;
 
     @FXML
-    private TableColumn<UsageRow, String> colStatus;
+    private TableView<UsageDTO> mostUsedTable;
 
-    private final UsageLogDAO usageLogDAO = new UsageLogDAO();
-    private final MedicineDAO medicineDAO = new MedicineDAO();
-    private final UserDAO userDAO = new UserDAO();
+    @FXML
+    private TableColumn<UsageDTO, String> colMedicineName;
+
+    @FXML
+    private TableColumn<UsageDTO, Integer> colUsageCount;
+
+    @FXML
+    private BarChart<String, Number> dailyBarChart;
+
+    @FXML
+    private CategoryAxis dailyXAxis;
+
+    @FXML
+    private LineChart<String, Number> weeklyLineChart;
+
+    @FXML
+    private CategoryAxis weeklyXAxis;
+
+    private final UsageService usageService = new UsageService();
 
     @FXML
     public void initialize() {
@@ -50,13 +68,17 @@ public class AdminUsageController {
             return;
         }
 
-        colMedName.setCellValueFactory(new PropertyValueFactory<>("medName"));
-        colUser.setCellValueFactory(new PropertyValueFactory<>("username"));
-        colLogDate.setCellValueFactory(new PropertyValueFactory<>("logDate"));
-        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        // Configure ComboBox filters
+        filterComboBox.setItems(FXCollections.observableArrayList("Today", "Last 7 days", "All time"));
+        filterComboBox.setValue("All time");
+        filterComboBox.setOnAction(e -> loadAnalyticsData());
 
-        // Add custom cell styling for compliance status
-        colStatus.setCellFactory(column -> new TableCell<>() {
+        // Configure Table Columns
+        colMedicineName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        colUsageCount.setCellValueFactory(new PropertyValueFactory<>("count"));
+
+        // Add custom cell factory to highlight top 5 medicines
+        colMedicineName.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -65,63 +87,72 @@ public class AdminUsageController {
                     setStyle("");
                 } else {
                     setText(item);
-                    if (item.equalsIgnoreCase("TAKEN")) {
-                        setTextFill(Color.web("#10b981")); // Green
-                        setStyle("-fx-font-weight: bold;");
-                    } else if (item.equalsIgnoreCase("SKIPPED")) {
-                        setTextFill(Color.web("#f59e0b")); // Yellow/Orange
+                    int index = getIndex();
+                    if (index == 0) {
+                        setTextFill(Color.web("#10b981")); // Emerald Green for Rank 1
+                        setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+                    } else if (index < 5) {
+                        setTextFill(Color.web("#6366f1")); // Indigo for Rank 2-5
                         setStyle("-fx-font-weight: bold;");
                     } else {
-                        setTextFill(Color.web("#94a3b8")); // Secondary slate
+                        setTextFill(Color.web("#f8fafc")); // Standard slate
                         setStyle("-fx-font-weight: normal;");
                     }
                 }
             }
         });
 
-        loadUsageData();
+        // Initialize and load analytics
+        loadAnalyticsData();
     }
 
-    private void loadUsageData() {
-        List<UsageLog> logs = usageLogDAO.getAll();
-        List<UsageRow> rows = new ArrayList<>();
+    private void loadAnalyticsData() {
+        String filter = filterComboBox.getValue();
+        System.out.println("Loading Admin analytics data with filter: " + filter);
 
-        for (UsageLog log : logs) {
-            Medicine med = medicineDAO.getById(log.getMedicineId());
-            String medName = med != null ? med.getName() : "Unknown Medicine (" + log.getMedicineId() + ")";
-            String username = "Unknown User";
-            if (med != null) {
-                username = userDAO.getUsernameById(med.getUserId());
-            }
+        // 1. Fetch statistics counts
+        int takenCount = usageService.getTakenCount(filter);
+        int totalCount = usageService.getTotalCount(filter);
+        lblTotalDoses.setText(String.valueOf(takenCount));
 
-            rows.add(new UsageRow(
-                medName,
-                username,
-                log.getTakenDate(),
-                log.getStatus()
-            ));
+        // Compute adherence rate %
+        double adherenceRate = 0.0;
+        if (totalCount > 0) {
+            adherenceRate = ((double) takenCount / totalCount) * 100.0;
+        }
+        lblAdherenceRate.setText(String.format("%.1f%%", adherenceRate));
+
+        // 2. Load Most Used Medicines Table
+        List<UsageDTO> mostUsed = usageService.getMostUsedMedicines(filter);
+        ObservableList<UsageDTO> tableData = FXCollections.observableArrayList(mostUsed);
+        mostUsedTable.setItems(tableData);
+
+        // Highlight top #1 medicine in the KPI card
+        if (!mostUsed.isEmpty()) {
+            UsageDTO topMed = mostUsed.get(0);
+            lblTopMedicine.setText(topMed.getName() + " (" + topMed.getCount() + ")");
+            lblTopMedicine.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-padding: 8 0 0 0;");
+        } else {
+            lblTopMedicine.setText("None");
+            lblTopMedicine.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #94a3b8; -fx-padding: 8 0 0 0;");
         }
 
-        ObservableList<UsageRow> observableList = FXCollections.observableArrayList(rows);
-        usageTable.setItems(observableList);
-    }
-
-    public static class UsageRow {
-        private final String medName;
-        private final String username;
-        private final String logDate;
-        private final String status;
-
-        public UsageRow(String medName, String username, String logDate, String status) {
-            this.medName = medName;
-            this.username = username;
-            this.logDate = logDate;
-            this.status = status;
+        // 3. Load Daily Usage BarChart
+        dailyBarChart.getData().clear();
+        List<UsageDTO> dailyData = usageService.getDailyUsage(filter);
+        XYChart.Series<String, Number> dailySeries = new XYChart.Series<>();
+        for (UsageDTO dto : dailyData) {
+            dailySeries.getData().add(new XYChart.Data<>(dto.getName(), dto.getCount()));
         }
+        dailyBarChart.getData().add(dailySeries);
 
-        public String getMedName() { return medName; }
-        public String getUsername() { return username; }
-        public String getLogDate() { return logDate; }
-        public String getStatus() { return status; }
+        // 4. Load Weekly Usage LineChart
+        weeklyLineChart.getData().clear();
+        List<UsageDTO> weeklyData = usageService.getWeeklyUsage(filter);
+        XYChart.Series<String, Number> weeklySeries = new XYChart.Series<>();
+        for (UsageDTO dto : weeklyData) {
+            weeklySeries.getData().add(new XYChart.Data<>(dto.getName(), dto.getCount()));
+        }
+        weeklyLineChart.getData().add(weeklySeries);
     }
 }

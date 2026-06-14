@@ -127,6 +127,26 @@ public class DBConnection {
                     System.out.println("Default dummy users registered in SQLite database.");
                 }
             }
+
+            // Seed database with test medicines if empty
+            try (Statement checkMedsStmt = conn.createStatement();
+                 java.sql.ResultSet rsMeds = checkMedsStmt.executeQuery("SELECT COUNT(*) FROM medicines")) {
+                if (rsMeds.next() && rsMeds.getInt(1) == 0) {
+                    int userId = 1;
+                    try (java.sql.ResultSet rsUser = checkMedsStmt.executeQuery("SELECT id FROM users LIMIT 1")) {
+                        if (rsUser.next()) {
+                            userId = rsUser.getInt(1);
+                        }
+                    }
+                    String pastDate = java.time.LocalDate.now().minusDays(5).toString();
+                    String nearDate = java.time.LocalDate.now().plusDays(3).toString();
+                    String futureDate = java.time.LocalDate.now().plusMonths(6).toString();
+                    stmt.execute("INSERT INTO medicines (name, dosage, time, expiry_date, user_id) VALUES ('Amoxicillin 500mg', '1 capsule', '08:00', '" + pastDate + "', " + userId + ")");
+                    stmt.execute("INSERT INTO medicines (name, dosage, time, expiry_date, user_id) VALUES ('Ibuprofen 400mg', '1 tablet', '13:00', '" + nearDate + "', " + userId + ")");
+                    stmt.execute("INSERT INTO medicines (name, dosage, time, expiry_date, user_id) VALUES ('Loratadine 10mg', '1 tablet', '20:00', '" + futureDate + "', " + userId + ")");
+                    System.out.println("Test medicines with past, near, and future expiry dates seeded in SQLite database.");
+                }
+            }
         } catch (SQLException e) {
             System.err.println("Failed to initialize SQLite database tables: " + e.getMessage());
         }
@@ -182,6 +202,26 @@ public class DBConnection {
                     stmt.execute("INSERT INTO users (username, password, role) VALUES ('john_doe', 'pass123', 'USER')");
                     stmt.execute("INSERT INTO users (username, password, role) VALUES ('admin_user', 'admin123', 'ADMIN')");
                     System.out.println("Default dummy users registered in MySQL database.");
+                }
+            }
+
+            // Seed database with test medicines if empty
+            try (Statement checkMedsStmt = conn.createStatement();
+                 java.sql.ResultSet rsMeds = checkMedsStmt.executeQuery("SELECT COUNT(*) FROM medicines")) {
+                if (rsMeds.next() && rsMeds.getInt(1) == 0) {
+                    int userId = 1;
+                    try (java.sql.ResultSet rsUser = checkMedsStmt.executeQuery("SELECT id FROM users LIMIT 1")) {
+                        if (rsUser.next()) {
+                            userId = rsUser.getInt(1);
+                        }
+                    }
+                    String pastDate = java.time.LocalDate.now().minusDays(5).toString();
+                    String nearDate = java.time.LocalDate.now().plusDays(3).toString();
+                    String futureDate = java.time.LocalDate.now().plusMonths(6).toString();
+                    stmt.execute("INSERT INTO medicines (name, dosage, time, expiry_date, user_id) VALUES ('Amoxicillin 500mg', '1 capsule', '08:00', '" + pastDate + "', " + userId + ")");
+                    stmt.execute("INSERT INTO medicines (name, dosage, time, expiry_date, user_id) VALUES ('Ibuprofen 400mg', '1 tablet', '13:00', '" + nearDate + "', " + userId + ")");
+                    stmt.execute("INSERT INTO medicines (name, dosage, time, expiry_date, user_id) VALUES ('Loratadine 10mg', '1 tablet', '20:00', '" + futureDate + "', " + userId + ")");
+                    System.out.println("Test medicines with past, near, and future expiry dates seeded in MySQL database.");
                 }
             }
             System.out.println("MySQL database tables verified / initialized successfully.");

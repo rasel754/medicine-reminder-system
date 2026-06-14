@@ -14,6 +14,8 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import service.AuthService;
 import service.StockService;
+import service.ExpiryService;
+import javafx.scene.control.DialogPane;
 import dao.MedicineDAO;
 import model.Medicine;
 import model.Stock;
@@ -64,6 +66,9 @@ public class AdminController {
         
         // Show admin dashboard overview pane on load
         showDashboardPane(null);
+
+        // Alert notifications for expired stock
+        Platform.runLater(this::checkForExpiredMedicinesAlert);
     }
 
     private void redirectToLoginWithAccessDenied() {
@@ -114,13 +119,8 @@ public class AdminController {
                 }
             }
 
-            List<Medicine> meds = medicineDAO.getAll();
-            int expiredCount = 0;
-            for (Medicine m : meds) {
-                if (stockService.isExpired(m)) {
-                    expiredCount++;
-                }
-            }
+            ExpiryService expiryService = new ExpiryService();
+            int expiredCount = expiryService.getExpiredMedicines().size();
 
             if (lblTotalStock != null) lblTotalStock.setText(String.valueOf(totalProducts));
             if (lblLowStock != null) lblLowStock.setText(String.valueOf(lowStockCount));
@@ -130,6 +130,38 @@ public class AdminController {
         } catch (IOException e) {
             System.err.println("Failed to load admin overview FXML: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    private void checkForExpiredMedicinesAlert() {
+        try {
+            ExpiryService expiryService = new ExpiryService();
+            List<Medicine> expired = expiryService.getExpiredMedicines();
+            if (!expired.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Expired Stock Alert");
+                alert.setHeaderText("Critical Alert: Expired Medicines Detected!");
+                
+                StringBuilder sb = new StringBuilder();
+                sb.append("The following medicines in the system have expired. Please take immediate action:\n\n");
+                for (Medicine m : expired) {
+                    sb.append("• ").append(m.getName())
+                      .append(" (Dosage: ").append(m.getDosage())
+                      .append(", Expiry Date: ").append(m.getExpiryDate())
+                      .append(")\n");
+                }
+                alert.setContentText(sb.toString());
+
+                if (welcomeLabel != null && welcomeLabel.getScene() != null) {
+                    DialogPane dialogPane = alert.getDialogPane();
+                    dialogPane.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+                    dialogPane.getStyleClass().add("alert-dialog");
+                }
+                
+                alert.show();
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to display expired stock alert: " + e.getMessage());
         }
     }
 

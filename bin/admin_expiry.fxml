@@ -1,15 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox spacing="20.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.AdminExpiryController">
    <children>
-      <Label text="Medication Expiry Tracking" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+      <Label text="Medication Expiry Tracking" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #10b981;" />
       <Label text="Monitor expiration status of patient medications in active rotation." styleClass="text-secondary" style="-fx-font-size: 13px;" />
+      
+      <!-- Dynamic Urgent Banner -->
+      <VBox fx:id="urgentBanner" spacing="5.0" style="-fx-background-color: #3b1515; -fx-border-color: #ef4444; -fx-border-width: 1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 15;" visible="false" managed="false">
+         <children>
+            <Label text="⚠️ CRITICAL ALERT: URGENT ACTION REQUIRED" style="-fx-text-fill: #ef4444; -fx-font-weight: bold; -fx-font-size: 14px;" />
+            <Label fx:id="urgentBannerText" text="Expired and near-expiry medications detected." style="-fx-text-fill: #f8fafc; -fx-font-size: 13px;" />
+         </children>
+      </VBox>
+      
+      <!-- Filter and Sort Controls -->
+      <HBox spacing="15.0" alignment="CENTER_LEFT">
+         <children>
+            <Label text="Filter by Expiry:" style="-fx-font-size: 14px; -fx-text-fill: #94a3b8;" />
+            <ComboBox fx:id="filterComboBox" prefWidth="200.0" styleClass="combo-box" />
+            <Button fx:id="btnSort" text="Sort: Expiry Date (Asc)" onAction="#handleSort" styleClass="button-secondary" />
+         </children>
+      </HBox>
       
       <TableView fx:id="expiryTable" VBox.vgrow="ALWAYS" prefHeight="480.0">
          <columns>

@@ -10,12 +10,45 @@ import javax.sound.sampled.SourceDataLine;
 
 /**
  * SoundUtil provides audio notification alerts using Java's built-in Sound API and JavaFX Media.
- * It will play resources/alert.wav, and falls back to synth tones on failure.
+ * It supports looping the alert for 30 seconds or stopping it immediately.
  */
 public class SoundUtil {
 
+    private static Object activeAudioClip = null;
+    private static Clip activeJavaSoundClip = null;
+    private static volatile boolean stopRequested = false;
+    private static Thread activeBeepThread = null;
+
     /**
-     * Plays the alert notification audio in a background thread.
+     * Stops any currently playing alert sound immediately.
+     */
+    public static synchronized void stopAlert() {
+        stopRequested = true;
+        if (activeAudioClip != null) {
+            try {
+                activeAudioClip.getClass().getMethod("stop").invoke(activeAudioClip);
+            } catch (Exception e) {
+                System.err.println("Failed to stop AudioClip: " + e.getMessage());
+            }
+            activeAudioClip = null;
+        }
+        if (activeJavaSoundClip != null) {
+            try {
+                activeJavaSoundClip.stop();
+                activeJavaSoundClip.close();
+            } catch (Exception e) {
+                System.err.println("Failed to stop Java Sound Clip: " + e.getMessage());
+            }
+            activeJavaSoundClip = null;
+        }
+        if (activeBeepThread != null) {
+            activeBeepThread.interrupt();
+            activeBeepThread = null;
+        }
+    }
+
+    /**
+     * Plays the alert notification audio continuously for 30 seconds in a background thread.
      */
     public static void playAlert() {
         new Thread(() -> {
@@ -30,13 +63,44 @@ public class SoundUtil {
                 generateDefaultAlertWav(alertFile);
             }
 
-            // 1. Try playing using JavaFX AudioClip (via reflection for compilation safety if jar is missing)
+            synchronized (SoundUtil.class) {
+                stopRequested = false;
+            }
+
+            // 1. Try playing using JavaFX AudioClip (via reflection for compilation safety)
             try {
                 Class<?> audioClipClass = Class.forName("javafx.scene.media.AudioClip");
                 java.lang.reflect.Constructor<?> constructor = audioClipClass.getConstructor(String.class);
                 Object audioClip = constructor.newInstance(alertFile.toURI().toString());
+                
+                int indefiniteValue = -1;
+                try {
+                    java.lang.reflect.Field indefiniteField = audioClipClass.getField("INDEFINITE");
+                    indefiniteValue = indefiniteField.getInt(null);
+                } catch (Exception ignored) {}
+                
+                audioClipClass.getMethod("setCycleCount", int.class).invoke(audioClip, indefiniteValue);
+                
+                synchronized (SoundUtil.class) {
+                    if (stopRequested) return;
+                    activeAudioClip = audioClip;
+                }
+
                 audioClipClass.getMethod("play").invoke(audioClip);
-                System.out.println("Sound notification played using javafx.scene.media.AudioClip.");
+                System.out.println("Sound notification started playing using JavaFX AudioClip (looped).");
+                
+                // Keep playing for 30 seconds unless stop is requested
+                for (int i = 0; i < 300; i++) {
+                    if (stopRequested) break;
+                    Thread.sleep(100);
+                }
+
+                synchronized (SoundUtil.class) {
+                    if (activeAudioClip != null) {
+                        audioClipClass.getMethod("stop").invoke(activeAudioClip);
+                        activeAudioClip = null;
+                    }
+                }
                 return;
             } catch (ClassNotFoundException e) {
                 System.out.println("javafx.scene.media.AudioClip not available in classpath. Falling back to Java Sound API.");
@@ -46,29 +110,63 @@ public class SoundUtil {
 
             // 2. Fallback to Java Sound Clip
             if (alertFile.exists()) {
-                try (AudioInputStream audioIn = AudioSystem.getAudioInputStream(alertFile)) {
+                try {
+                    AudioInputStream audioIn = AudioSystem.getAudioInputStream(alertFile);
                     Clip clip = AudioSystem.getClip();
                     clip.open(audioIn);
+                    
+                    synchronized (SoundUtil.class) {
+                        if (stopRequested) {
+                            clip.close();
+                            return;
+                        }
+                        activeJavaSoundClip = clip;
+                    }
+                    
+                    clip.loop(Clip.LOOP_CONTINUOUSLY);
                     clip.start();
-                    // Block briefly to prevent resource disposal before playback begins
-                    Thread.sleep(clip.getMicrosecondLength() / 1000 + 100);
+                    System.out.println("Sound notification started playing using Java Sound Clip (looped).");
+                    
+                    // Keep playing for 30 seconds unless stop is requested
+                    for (int i = 0; i < 300; i++) {
+                        if (stopRequested) break;
+                        Thread.sleep(100);
+                    }
+
+                    synchronized (SoundUtil.class) {
+                        if (activeJavaSoundClip != null) {
+                            activeJavaSoundClip.stop();
+                            activeJavaSoundClip.close();
+                            activeJavaSoundClip = null;
+                        }
+                    }
                     return;
                 } catch (Exception e) {
-                    System.err.println("WAV Audio playback failed: " + e.getMessage() + ". Playing fallback beep.");
+                    System.err.println("WAV Audio playback failed: " + e.getMessage() + ". Playing fallback beep loop.");
                 }
             }
-            playSynthBeep();
+            playSynthBeepLoop();
         }, "SoundUtil-PlaybackThread").start();
     }
 
-    private static void playSynthBeep() {
+    private static void playSynthBeepLoop() {
+        activeBeepThread = Thread.currentThread();
+        long start = System.currentTimeMillis();
         try {
-            // Generate a pleasing double-beep using synthetic audio lines
-            generateTone(587, 120); // D5
-            Thread.sleep(80);
-            generateTone(880, 200); // A5
+            while (System.currentTimeMillis() - start < 30000 && !stopRequested) {
+                generateTone(587, 120); // D5
+                if (stopRequested) break;
+                Thread.sleep(80);
+                if (stopRequested) break;
+                generateTone(880, 200); // A5
+                if (stopRequested) break;
+                Thread.sleep(300);
+            }
+        } catch (InterruptedException ignored) {
         } catch (Exception e) {
             java.awt.Toolkit.getDefaultToolkit().beep();
+        } finally {
+            activeBeepThread = null;
         }
     }
 

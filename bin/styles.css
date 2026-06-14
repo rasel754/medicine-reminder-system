@@ -180,3 +180,39 @@
     -fx-background-color: #334155;
 }
 
+/* Custom table row backgrounds and cell text colors for Expiry Status */
+.table-row-cell:expired {
+    -fx-background-color: #3b1515;
+}
+.table-row-cell:expired .table-cell {
+    -fx-text-fill: #f87171;
+}
+
+.table-row-cell:expiring-soon {
+    -fx-background-color: #3a2b0c;
+}
+.table-row-cell:expiring-soon .table-cell {
+    -fx-text-fill: #fbbf24;
+}
+
+.table-row-cell:safe {
+    -fx-background-color: #0c2b1a;
+}
+.table-row-cell:safe .table-cell {
+    -fx-text-fill: #34d399;
+}
+
+/* General styling for warning popups */
+.dialog-pane {
+    -fx-background-color: #1e293b;
+}
+.dialog-pane .label {
+    -fx-text-fill: #f8fafc;
+}
+.dialog-pane .button {
+    -fx-background-color: #334155;
+    -fx-text-fill: #f8fafc;
+}
+.dialog-pane .button:hover {
+    -fx-background-color: #475569;
+}

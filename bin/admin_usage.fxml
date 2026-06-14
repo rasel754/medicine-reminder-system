@@ -1,23 +1,128 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="20.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.AdminUsageController">
-   <children>
-      <Label text="Patient Adherence Logs" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
-      <Label text="Review dose compliance histories (Taken/Skipped) for all active patient prescriptions." styleClass="text-secondary" style="-fx-font-size: 13px;" />
-      
-      <TableView fx:id="usageTable" VBox.vgrow="ALWAYS" prefHeight="480.0">
-         <columns>
-            <TableColumn fx:id="colMedName" text="Medicine Name" prefWidth="220.0" />
-            <TableColumn fx:id="colUser" text="Patient (Username)" prefWidth="180.0" />
-            <TableColumn fx:id="colLogDate" text="Date &amp; Time" prefWidth="220.0" />
-            <TableColumn fx:id="colStatus" text="Adherence Status" prefWidth="180.0" />
-         </columns>
-      </TableView>
-   </children>
-</VBox>
+<ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.AdminUsageController">
+   <content>
+      <VBox spacing="20.0" style="-fx-background-color: #0f172a;">
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+         <children>
+            <!-- Header Section -->
+            <HBox alignment="CENTER_LEFT" spacing="20.0">
+               <children>
+                  <VBox HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="📈 Medication Analytics &amp; Usage Trends" />
+                        <Label styleClass="text-secondary" style="-fx-font-size: 13px;" text="Monitor patient adherence logs, most popular prescriptions, and intake timelines." />
+                     </children>
+                  </VBox>
+                  <ComboBox fx:id="filterComboBox" prefWidth="180.0" />
+               </children>
+            </HBox>
+
+            <!-- Stats Summary Cards -->
+            <HBox spacing="20.0" fillHeight="true">
+               <children>
+                  <!-- Card 1: Total Doses Taken -->
+                  <VBox styleClass="card" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label styleClass="card-title" text="TOTAL DOSES TAKEN" />
+                        <Label fx:id="lblTotalDoses" styleClass="card-value" text="0" />
+                     </children>
+                  </VBox>
+                  <!-- Card 2: Adherence Rate -->
+                  <VBox styleClass="card" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label styleClass="card-title" text="PATIENT ADHERENCE RATE" />
+                        <Label fx:id="lblAdherenceRate" styleClass="card-value" text="0.0%" />
+                     </children>
+                  </VBox>
+                  <!-- Card 3: Top Medication -->
+                  <VBox styleClass="card" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label styleClass="card-title" text="MOST POPULAR MEDICINE" />
+                        <Label fx:id="lblTopMedicine" styleClass="card-value" style="-fx-font-size: 18px; -fx-padding: 8 0 0 0;" text="None" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+
+            <!-- Main Analytics Grid -->
+            <GridPane hgap="20.0" vgap="20.0">
+              <columnConstraints>
+                <ColumnConstraints percentWidth="40.0" hgrow="SOMETIMES" minWidth="300.0" />
+                <ColumnConstraints percentWidth="60.0" hgrow="SOMETIMES" minWidth="450.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <!-- Left: Most Used Medicines Table -->
+                  <VBox spacing="10.0" GridPane.columnIndex="0">
+                     <children>
+                        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Most Popular Medicines" />
+                        <TableView fx:id="mostUsedTable" prefHeight="450.0">
+                           <columns>
+                              <TableColumn fx:id="colMedicineName" text="Medicine Name" prefWidth="200.0" />
+                              <TableColumn fx:id="colUsageCount" text="Doses Taken" prefWidth="120.0" />
+                           </columns>
+                        </TableView>
+                     </children>
+                  </VBox>
+                  
+                  <!-- Right: Charts -->
+                  <VBox spacing="20.0" GridPane.columnIndex="1">
+                     <children>
+                        <!-- Daily Usage Bar Chart -->
+                        <VBox spacing="10.0" styleClass="card">
+                           <children>
+                              <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" text="Daily Usage Trends" />
+                              <BarChart fx:id="dailyBarChart" legendVisible="false" prefHeight="200.0">
+                                <xAxis>
+                                  <CategoryAxis side="BOTTOM" label="Date" fx:id="dailyXAxis" />
+                                </xAxis>
+                                <yAxis>
+                                  <NumberAxis side="LEFT" label="Doses" tickUnit="1.0" minorTickCount="0" />
+                                </yAxis>
+                              </BarChart>
+                           </children>
+                        </VBox>
+
+                        <!-- Weekly Usage Line Chart -->
+                        <VBox spacing="10.0" styleClass="card">
+                           <children>
+                              <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" text="Weekly Usage Trends" />
+                              <LineChart fx:id="weeklyLineChart" legendVisible="false" prefHeight="200.0">
+                                <xAxis>
+                                  <CategoryAxis side="BOTTOM" label="Week" fx:id="weeklyXAxis" />
+                                </xAxis>
+                                <yAxis>
+                                  <NumberAxis side="LEFT" label="Doses" tickUnit="1.0" minorTickCount="0" />
+                                </yAxis>
+                              </LineChart>
+                           </children>
+                        </VBox>
+                     </children>
+                  </VBox>
+               </children>
+            </GridPane>
+         </children>
+      </VBox>
+   </content>
+</ScrollPane>
