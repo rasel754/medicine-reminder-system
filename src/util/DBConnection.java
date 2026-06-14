@@ -147,6 +147,61 @@ public class DBConnection {
                     System.out.println("Test medicines with past, near, and future expiry dates seeded in SQLite database.");
                 }
             }
+
+            // Seed database with default stock if empty
+            try (Statement checkStockStmt = conn.createStatement();
+                 java.sql.ResultSet rsStock = checkStockStmt.executeQuery("SELECT COUNT(*) FROM stock")) {
+                if (rsStock.next() && rsStock.getInt(1) == 0) {
+                    stmt.execute("INSERT INTO stock (medicine_name, quantity) VALUES ('Amoxicillin 500mg', 2)");
+                    stmt.execute("INSERT INTO stock (medicine_name, quantity) VALUES ('Ibuprofen 400mg', 15)");
+                    stmt.execute("INSERT INTO stock (medicine_name, quantity) VALUES ('Loratadine 10mg', 40)");
+                    System.out.println("Default stock seeded in SQLite database.");
+                }
+            }
+
+            // Seed database with test intake logs if empty
+            try (Statement checkLogsStmt = conn.createStatement();
+                 java.sql.ResultSet rsLogs = checkLogsStmt.executeQuery("SELECT COUNT(*) FROM intake_logs")) {
+                if (rsLogs.next() && rsLogs.getInt(1) == 0) {
+                    int userId = 1;
+                    java.util.List<Integer> medIds = new java.util.ArrayList<>();
+                    try (java.sql.ResultSet rsUser = checkLogsStmt.executeQuery("SELECT id FROM users LIMIT 1")) {
+                        if (rsUser.next()) {
+                            userId = rsUser.getInt(1);
+                        }
+                    }
+                    try (java.sql.ResultSet rsMeds = checkLogsStmt.executeQuery("SELECT id FROM medicines")) {
+                        while (rsMeds.next()) {
+                            medIds.add(rsMeds.getInt("id"));
+                        }
+                    }
+                    if (!medIds.isEmpty()) {
+                        int medId1 = medIds.get(0);
+                        int medId2 = medIds.size() > 1 ? medIds.get(1) : medId1;
+                        int medId3 = medIds.size() > 2 ? medIds.get(2) : medId2;
+                        
+                        String d1 = java.time.LocalDate.now().minusDays(3).toString();
+                        String d2 = java.time.LocalDate.now().minusDays(2).toString();
+                        String d3 = java.time.LocalDate.now().minusDays(1).toString();
+                        String dToday = java.time.LocalDate.now().toString();
+
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId1, d1));
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId2, d1));
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'missed', '%s')", userId, medId3, d1));
+
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId1, d2));
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'missed', '%s')", userId, medId2, d2));
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId3, d2));
+
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId1, d3));
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId2, d3));
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId3, d3));
+
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'missed', '%s')", userId, medId1, dToday));
+                        System.out.println("Test intake logs seeded in SQLite database.");
+                    }
+                }
+            }
         } catch (SQLException e) {
             System.err.println("Failed to initialize SQLite database tables: " + e.getMessage());
         }
@@ -222,6 +277,61 @@ public class DBConnection {
                     stmt.execute("INSERT INTO medicines (name, dosage, time, expiry_date, user_id) VALUES ('Ibuprofen 400mg', '1 tablet', '13:00', '" + nearDate + "', " + userId + ")");
                     stmt.execute("INSERT INTO medicines (name, dosage, time, expiry_date, user_id) VALUES ('Loratadine 10mg', '1 tablet', '20:00', '" + futureDate + "', " + userId + ")");
                     System.out.println("Test medicines with past, near, and future expiry dates seeded in MySQL database.");
+                }
+            }
+
+            // Seed database with default stock if empty
+            try (Statement checkStockStmt = conn.createStatement();
+                 java.sql.ResultSet rsStock = checkStockStmt.executeQuery("SELECT COUNT(*) FROM stock")) {
+                if (rsStock.next() && rsStock.getInt(1) == 0) {
+                    stmt.execute("INSERT INTO stock (medicine_name, quantity) VALUES ('Amoxicillin 500mg', 2)");
+                    stmt.execute("INSERT INTO stock (medicine_name, quantity) VALUES ('Ibuprofen 400mg', 15)");
+                    stmt.execute("INSERT INTO stock (medicine_name, quantity) VALUES ('Loratadine 10mg', 40)");
+                    System.out.println("Default stock seeded in MySQL database.");
+                }
+            }
+
+            // Seed database with test intake logs if empty
+            try (Statement checkLogsStmt = conn.createStatement();
+                 java.sql.ResultSet rsLogs = checkLogsStmt.executeQuery("SELECT COUNT(*) FROM intake_logs")) {
+                if (rsLogs.next() && rsLogs.getInt(1) == 0) {
+                    int userId = 1;
+                    java.util.List<Integer> medIds = new java.util.ArrayList<>();
+                    try (java.sql.ResultSet rsUser = checkLogsStmt.executeQuery("SELECT id FROM users LIMIT 1")) {
+                        if (rsUser.next()) {
+                            userId = rsUser.getInt(1);
+                        }
+                    }
+                    try (java.sql.ResultSet rsMeds = checkLogsStmt.executeQuery("SELECT id FROM medicines")) {
+                        while (rsMeds.next()) {
+                            medIds.add(rsMeds.getInt("id"));
+                        }
+                    }
+                    if (!medIds.isEmpty()) {
+                        int medId1 = medIds.get(0);
+                        int medId2 = medIds.size() > 1 ? medIds.get(1) : medId1;
+                        int medId3 = medIds.size() > 2 ? medIds.get(2) : medId2;
+                        
+                        String d1 = java.time.LocalDate.now().minusDays(3).toString();
+                        String d2 = java.time.LocalDate.now().minusDays(2).toString();
+                        String d3 = java.time.LocalDate.now().minusDays(1).toString();
+                        String dToday = java.time.LocalDate.now().toString();
+
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId1, d1));
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId2, d1));
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'missed', '%s')", userId, medId3, d1));
+
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId1, d2));
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'missed', '%s')", userId, medId2, d2));
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId3, d2));
+
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId1, d3));
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId2, d3));
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'taken', '%s')", userId, medId3, d3));
+
+                        stmt.execute(String.format("INSERT INTO intake_logs (user_id, medicine_id, status, date) VALUES (%d, %d, 'missed', '%s')", userId, medId1, dToday));
+                        System.out.println("Test intake logs seeded in MySQL database.");
+                    }
                 }
             }
             System.out.println("MySQL database tables verified / initialized successfully.");

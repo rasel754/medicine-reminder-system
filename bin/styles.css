@@ -216,3 +216,48 @@
 .dialog-pane .button:hover {
     -fx-background-color: #475569;
 }
+
+/* Quick action control hub button stylings */
+.button-control {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 12 20;
+    -fx-cursor: hand;
+}
+
+.button-control:hover {
+    -fx-opacity: 0.95;
+}
+
+/* Micro-animations and hover transitions for KPI cards */
+.card:hover {
+    -fx-border-color: #6366f1;
+    -fx-background-color: #202e47;
+}
+
+/* Pie Chart styling overrides */
+.chart-pie {
+    -fx-border-color: #1e293b;
+    -fx-border-width: 1.5;
+}
+
+.chart-pie-label {
+    -fx-fill: #f8fafc;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+    -fx-padding: 10;
+}
+
+.chart-legend-item-symbol {
+    -fx-background-radius: 4;
+}
+
+.chart-legend-item {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 11px;
+}

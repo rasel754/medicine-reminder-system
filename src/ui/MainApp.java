@@ -51,6 +51,7 @@ public class MainApp extends Application {
             primaryStage.setTitle("PillSync - Login");
             primaryStage.setMinWidth(800);
             primaryStage.setMinHeight(600);
+            primaryStage.setMaximized(true);
             primaryStage.show();
 
             // Setup background reminders

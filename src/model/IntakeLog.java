@@ -11,6 +11,7 @@ public class IntakeLog {
     private String date;   // 'YYYY-MM-DD'
     private String medicineName;
     private String medicineDosage;
+    private String username;
 
     public IntakeLog() {}
 
@@ -76,5 +77,13 @@ public class IntakeLog {
 
     public void setMedicineDosage(String medicineDosage) {
         this.medicineDosage = medicineDosage;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

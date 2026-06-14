@@ -318,5 +318,45 @@ public class IntakeLogDAO {
         }
         return 0;
     }
+
+    /**
+     * Retrieves recent missed intake logs across all users.
+     */
+    public List<IntakeLog> getRecentMissedLogs(int limit) {
+        List<IntakeLog> list = new ArrayList<>();
+        String query = "SELECT il.id, il.user_id, il.medicine_id, m.name AS medicine_name, m.dosage AS medicine_dosage, u.username AS username, il.status, il.date " +
+                       "FROM intake_logs il " +
+                       "JOIN medicines m ON il.medicine_id = m.id " +
+                       "JOIN users u ON il.user_id = u.id " +
+                       "WHERE il.status = 'missed' " +
+                       "ORDER BY il.date DESC, il.id DESC LIMIT ?";
+        Connection conn = DBConnection.getConnection();
+        if (conn == null) {
+            return list;
+        }
+
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, limit);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    IntakeLog log = new IntakeLog(
+                        rs.getInt("id"),
+                        rs.getInt("user_id"),
+                        rs.getInt("medicine_id"),
+                        rs.getString("status"),
+                        rs.getString("date")
+                    );
+                    log.setMedicineName(rs.getString("medicine_name"));
+                    log.setMedicineDosage(rs.getString("medicine_dosage"));
+                    log.setUsername(rs.getString("username"));
+                    list.add(log);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL Exception in IntakeLogDAO.getRecentMissedLogs: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
 }
 

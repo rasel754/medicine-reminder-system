@@ -93,9 +93,19 @@ public class UserController {
             }
             
             if (stage != null) {
+                boolean wasMaximized = stage.isMaximized();
+                boolean wasFullScreen = stage.isFullScreen();
+
                 stage.setScene(new Scene(root));
                 stage.setTitle("PillSync - Login");
-                stage.centerOnScreen();
+
+                if (wasMaximized) {
+                    stage.setMaximized(true);
+                } else if (wasFullScreen) {
+                    stage.setFullScreen(true);
+                } else {
+                    stage.centerOnScreen();
+                }
                 stage.show();
             }
         } catch (IOException e) {
@@ -224,9 +234,19 @@ public class UserController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/login.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            boolean wasMaximized = stage.isMaximized();
+            boolean wasFullScreen = stage.isFullScreen();
+
             stage.setScene(new Scene(root));
             stage.setTitle("PillSync - Login");
-            stage.centerOnScreen();
+
+            if (wasMaximized) {
+                stage.setMaximized(true);
+            } else if (wasFullScreen) {
+                stage.setFullScreen(true);
+            } else {
+                stage.centerOnScreen();
+            }
             stage.show();
         } catch (IOException e) {
             System.err.println("Failed to load login FXML: " + e.getMessage());

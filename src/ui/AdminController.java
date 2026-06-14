@@ -86,9 +86,19 @@ public class AdminController {
             }
             
             if (stage != null) {
+                boolean wasMaximized = stage.isMaximized();
+                boolean wasFullScreen = stage.isFullScreen();
+
                 stage.setScene(new Scene(root));
                 stage.setTitle("PillSync - Login");
-                stage.centerOnScreen();
+
+                if (wasMaximized) {
+                    stage.setMaximized(true);
+                } else if (wasFullScreen) {
+                    stage.setFullScreen(true);
+                } else {
+                    stage.centerOnScreen();
+                }
                 stage.show();
             }
         } catch (IOException e) {
@@ -99,38 +109,7 @@ public class AdminController {
     @FXML
     public void showDashboardPane(ActionEvent event) {
         highlightActiveButton(btnDashboard);
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/admin_overview.fxml"));
-            Parent pane = loader.load();
-
-            // Find elements inside loaded pane using lookup
-            Label lblTotalStock = (Label) pane.lookup("#lblTotalStock");
-            Label lblLowStock = (Label) pane.lookup("#lblLowStock");
-            Label lblExpiredMeds = (Label) pane.lookup("#lblExpiredMeds");
-
-            // Calculate metrics
-            List<Stock> stocks = stockService.getAllStock();
-            int totalProducts = stocks.size();
-            
-            int lowStockCount = 0;
-            for (Stock s : stocks) {
-                if (stockService.checkLowStock(s.getMedicineName(), 5)) {
-                    lowStockCount++;
-                }
-            }
-
-            ExpiryService expiryService = new ExpiryService();
-            int expiredCount = expiryService.getExpiredMedicines().size();
-
-            if (lblTotalStock != null) lblTotalStock.setText(String.valueOf(totalProducts));
-            if (lblLowStock != null) lblLowStock.setText(String.valueOf(lowStockCount));
-            if (lblExpiredMeds != null) lblExpiredMeds.setText(String.valueOf(expiredCount));
-
-            contentArea.getChildren().setAll(pane);
-        } catch (IOException e) {
-            System.err.println("Failed to load admin overview FXML: " + e.getMessage());
-            e.printStackTrace();
-        }
+        loadPane("/admin_overview.fxml");
     }
 
     private void checkForExpiredMedicinesAlert() {
@@ -192,9 +171,19 @@ public class AdminController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/login.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            boolean wasMaximized = stage.isMaximized();
+            boolean wasFullScreen = stage.isFullScreen();
+
             stage.setScene(new Scene(root));
             stage.setTitle("PillSync - Login");
-            stage.centerOnScreen();
+
+            if (wasMaximized) {
+                stage.setMaximized(true);
+            } else if (wasFullScreen) {
+                stage.setFullScreen(true);
+            } else {
+                stage.centerOnScreen();
+            }
             stage.show();
         } catch (IOException e) {
             System.err.println("Failed to load login FXML: " + e.getMessage());

@@ -65,10 +65,20 @@ public class LoginController {
 
             // Set new scene on active stage
             Stage stage = (Stage) usernameField.getScene().getWindow();
+            boolean wasMaximized = stage.isMaximized();
+            boolean wasFullScreen = stage.isFullScreen();
+
             Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.setTitle("PillSync - " + titleRole + " (" + AuthService.getCurrentUser().getUsername() + ")");
-            stage.centerOnScreen();
+            
+            if (wasMaximized) {
+                stage.setMaximized(true);
+            } else if (wasFullScreen) {
+                stage.setFullScreen(true);
+            } else {
+                stage.centerOnScreen();
+            }
             stage.show();
         } catch (IOException e) {
             System.err.println("Failed to load dashboard scene for role " + role + ": " + e.getMessage());
@@ -83,9 +93,18 @@ public class LoginController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/register.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) errorLabel.getScene().getWindow();
-            Scene scene = new Scene(root, 800, 600);
+            boolean wasMaximized = stage.isMaximized();
+            boolean wasFullScreen = stage.isFullScreen();
+
+            Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.setTitle("PillSync - Register");
+
+            if (wasMaximized) {
+                stage.setMaximized(true);
+            } else if (wasFullScreen) {
+                stage.setFullScreen(true);
+            }
             stage.show();
         } catch (IOException e) {
             System.err.println("Failed to load register scene: " + e.getMessage());
